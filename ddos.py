@@ -10,7 +10,12 @@ import threading
 import os
 import re
 
+def normalize_proxy(proxy):
+    # Loại bỏ tiền tố http:// hoặc https:// nếu có
+    return re.sub(r'^https?://', '', proxy.strip())
+
 def remove_port__(proxy):
+    proxy = normalize_proxy(proxy)
     proxy_parts = proxy.split(':')
     if len(proxy_parts) == 2:
         return proxy_parts[0]
@@ -33,10 +38,11 @@ def create_proxy_file_if_not_exists():
     else:
         with open("proxy.txt", "r") as proxy_file:
             for line in proxy_file:
-                proxy = line.strip()
+                proxy = normalize_proxy(line)
                 if not re.match(r"^\d+\.\d+\.\d+\.\d+:\d+$", proxy):
                     print(f"{Fore.RED}\nLỗi: Proxy phải là http/https, vui lòng nhập đúng định dạng ip proxy ví dụ: 103.167.22.58:80{Style.RESET_ALL}")
                     sys.exit()
+
 def run_ddos(args, process):
     start_time = time.time()
     custom_colors = None
@@ -49,7 +55,7 @@ def run_ddos(args, process):
             break
         with open("proxy.txt", "r") as proxy_file:
             for line in proxy_file:
-                proxy = line.strip()
+                proxy = normalize_proxy(line)
                 proxy_ip = remove_port__(proxy)
                 ____country_target = country_target____(proxy_ip)
                 current_color = Fore.WHITE
